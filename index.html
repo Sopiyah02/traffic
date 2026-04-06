@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRAFFICOM · Command Interface</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&family=Barlow+Condensed:wght@300;400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<audio id="audioHenshin" src="media/Henshin.mp3" loop></audio>
+<audio id="audioOOO" src="media/OOO.mp3" loop></audio>
+<style>
+:root {
+  --ink: #0D0D0D;
+  --paper: #F2F0EA;
+  --paper2: #E8E5DC;
+  --paper3: #D9D5C8;
+  --rule: #C4BFB0;
+  --rule2: #A8A296;
+  --accent: #D4380D;
+  --accent2: #E85C2E;
+  --accent-y: #D97706;
+  --accent-g: #166534;
+  --accent-g2: #15803D;
+  --ink2: #3D3A33;
+  --ink3: #6B6760;
+  --red-bg: #FEF2EE;
+  --yellow-bg: #FFFBEB;
+  --green-bg: #F0FDF4;
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-body: 'Barlow', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--rule); }
+
+/* ── HEADER ── */
+header {
+  background: var(--ink);
+  color: var(--paper);
+  display: flex;
+  align-items: stretch;
+  height: 56px;
+  border-bottom: 3px solid var(--accent);
+}
+.hd-brand {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 24px;
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+.hd-logo {
+  width: 28px; height: 28px;
+  border: 2px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  margin-right: 12px; flex-shrink: 0;
+}
+.hd-logo svg { width: 14px; height: 14px; }
+.brand-main {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.35rem;
+  letter-spacing: 5px;
+  color: var(--paper);
+  line-height: 1;
+}
+.brand-sub {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: rgba(242,240,234,0.4);
+  letter-spacing: 2px;
+  margin-top: 2px;
+}
+.hd-pills {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-left: auto;
+}
+.hd-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  height: 100%;
+  border-left: 1px solid rgba(255,255,255,0.08);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+  color: rgba(242,240,234,0.5);
+  cursor: pointer;
+  transition: all 0.15s;
+  background: none; border-top: none; border-right: none; border-bottom: none;
+  border-left: 1px solid rgba(255,255,255,0.08);
+}
+.hd-pill:hover { color: var(--paper); background: rgba(255,255,255,0.04); }
+.hd-pill.ok { color: #4ADE80; }
+.hd-pill.err { color: var(--accent2); }
+.hd-pill.music-on { color: var(--accent-y); }
+.pdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.eq { display: flex; align-items: flex-end; gap: 2px; height: 12px; }
+.eq span { width: 2px; background: currentColor; height: 30%; border-radius: 1px; }
+.hd-pill.music-on .eq span:nth-child(1) { animation: ba .5s ease-in-out infinite alternate; }
+.hd-pill.music-on .eq span:nth-child(2) { animation: ba .4s ease-in-out infinite alternate .1s; }
+.hd-pill.music-on .eq span:nth-child(3) { animation: ba .6s ease-in-out infinite alternate .05s; }
+.hd-pill.music-on .eq span:nth-child(4) { animation: ba .45s ease-in-out infinite alternate .15s; }
+@keyframes ba { from { height: 20%; } to { height: 95%; } }
+
+.hd-time {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  border-left: 1px solid rgba(255,255,255,0.08);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--paper);
+  letter-spacing: 2px;
+  min-width: 100px;
+}
+
+/* ── LAYOUT ── */
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr 260px;
+  grid-template-rows: 1fr;
+  min-height: calc(100vh - 56px);
+}
+
+.panel {
+  border-right: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+}
+.panel:last-child { border-right: none; }
+
+.pnl-hd {
+  padding: 0 20px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper2);
+  flex-shrink: 0;
+}
+.pnl-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 3px;
+  color: var(--ink3);
+  text-transform: uppercase;
+}
+.pnl-badge {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 500;
+}
+.pnl-badge.r { background: var(--accent); }
+.pnl-badge.g { background: var(--accent-g2); }
+.pnl-badge.y { background: var(--accent-y); color: var(--ink); }
+.pnl-badge.auto { background: var(--ink2); }
+.pnl-badge.man { background: var(--accent); }
+
+/* ── SIGNAL UNIT ── */
+.signal-block {
+  padding: 28px 20px 24px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.traffic-light {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--ink);
+  border: 2px solid var(--ink2);
+  border-radius: 10px;
+  padding: 12px 14px;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  position: relative;
+}
+.traffic-light::before {
+  content: '';
+  position: absolute;
+  top: -14px; left: 50%; transform: translateX(-50%);
+  width: 3px; height: 14px;
+  background: var(--ink2);
+}
+.tl-bulb {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+.tl-bulb.r { background: #1F0A0A; border: 2px solid #330D0D; }
+.tl-bulb.y { background: #1F1600; border: 2px solid #332300; }
+.tl-bulb.g { background: #001F10; border: 2px solid #003318; }
+.tl-bulb.r.on {
+  background: radial-gradient(circle at 38% 35%, #FF9090, #EF4444 55%, #991B1B);
+  border-color: #EF4444;
+  box-shadow: 0 0 20px rgba(239,68,68,0.7), 0 0 50px rgba(239,68,68,0.25);
+}
+.tl-bulb.y.on {
+  background: radial-gradient(circle at 38% 35%, #FFE090, #F59E0B 55%, #92400E);
+  border-color: #F59E0B;
+  box-shadow: 0 0 20px rgba(245,158,11,0.7), 0 0 50px rgba(245,158,11,0.25);
+  animation: yblink 0.85s ease-in-out infinite;
+}
+.tl-bulb.g.on {
+  background: radial-gradient(circle at 38% 35%, #6EE7B7, #10B981 55%, #065F46);
+  border-color: #10B981;
+  box-shadow: 0 0 20px rgba(16,185,129,0.7), 0 0 50px rgba(16,185,129,0.25);
+}
+@keyframes yblink { 0%,100%{opacity:1}50%{opacity:0.25} }
+
+.signal-info { flex: 1; }
+.si-state {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 3.2rem;
+  letter-spacing: 2px;
+  line-height: 0.9;
+  transition: color 0.3s;
+  color: var(--ink);
+}
+.si-state.r { color: var(--accent); }
+.si-state.y { color: var(--accent-y); }
+.si-state.g { color: var(--accent-g2); }
+.si-desc {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+  color: var(--ink3);
+  margin-top: 6px;
+}
+.si-mode {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  color: var(--ink3);
+  background: var(--paper2);
+}
+.si-mode.manual {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--red-bg);
+}
+
+/* ── TIMER ── */
+.timer-block {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+.tb-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.tb-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  color: var(--ink3);
+}
+.tb-val {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 2.6rem;
+  letter-spacing: 1px;
+  line-height: 1;
+  transition: color 0.3s;
+  color: var(--ink);
+}
+.tb-val.r { color: var(--accent); }
+.tb-val.y { color: var(--accent-y); }
+.tb-val.g { color: var(--accent-g2); }
+.tb-track {
+  height: 3px;
+  background: var(--rule);
+  position: relative;
+  overflow: hidden;
+}
+.tb-fill {
+  height: 100%;
+  background: var(--ink);
+  transition: width 0.9s linear, background 0.3s;
+}
+.tb-fill.r { background: var(--accent); }
+.tb-fill.y { background: var(--accent-y); }
+.tb-fill.g { background: var(--accent-g2); }
+
+/* ── CONTROLS ── */
+.ctrl-block {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+.ctrl-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  color: var(--ink3);
+  margin-bottom: 10px;
+  display: block;
+}
+.signal-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.sbt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 4px;
+  border: 1px solid var(--rule);
+  background: var(--paper2);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 1.5px;
+  color: var(--ink3);
+  font-weight: 500;
+}
+.sbt .sdot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--rule);
+  transition: all 0.2s;
+}
+.sbt.dis { opacity: 0.35; pointer-events: none; }
+.sbt.r:not(.dis):hover, .sbt.r.sel {
+  background: var(--red-bg); border-color: var(--accent); color: var(--accent);
+}
+.sbt.r:not(.dis):hover .sdot, .sbt.r.sel .sdot {
+  background: var(--accent); box-shadow: 0 0 8px var(--accent);
+}
+.sbt.y:not(.dis):hover, .sbt.y.sel {
+  background: var(--yellow-bg); border-color: var(--accent-y); color: var(--accent-y);
+}
+.sbt.y:not(.dis):hover .sdot, .sbt.y.sel .sdot {
+  background: var(--accent-y); box-shadow: 0 0 8px var(--accent-y);
+}
+.sbt.g:not(.dis):hover, .sbt.g.sel {
+  background: var(--green-bg); border-color: var(--accent-g2); color: var(--accent-g2);
+}
+.sbt.g:not(.dis):hover .sdot, .sbt.g.sel .sdot {
+  background: var(--accent-g2); box-shadow: 0 0 8px var(--accent-g2);
+}
+
+.mode-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.mbt {
+  padding: 9px;
+  border: 1px solid var(--rule);
+  background: var(--paper2);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 3px;
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mbt:hover { border-color: var(--ink); color: var(--ink); background: var(--paper3); }
+.mbt.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ── DURATIONS ── */
+.dur-block {
+  padding: 16px 20px;
+  flex-shrink: 0;
+}
+.dur-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.dur-item label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+  color: var(--ink3);
+}
+.dur-item label.r { color: var(--accent); }
+.dur-item label.y { color: var(--accent-y); }
+.dur-item label.g { color: var(--accent-g2); }
+.dur-item input {
+  width: 100%;
+  padding: 8px 6px;
+  background: var(--paper2);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: 2px;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+.dur-item input:focus { outline: none; border-color: var(--ink); background: white; }
+
+/* ── CENTER CANVAS ── */
+.canvas-panel {
+  border-right: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+}
+.canvas-wrap {
+  flex: 1;
+  position: relative;
+  background: #F7F5EF;
+  overflow: hidden;
+}
+canvas { display: block; width: 100%; height: 100%; }
+.cv-overlay {
+  position: absolute;
+  bottom: 12px; left: 12px; right: 12px;
+  display: flex; justify-content: space-between; align-items: flex-end;
+  pointer-events: none;
+}
+.cv-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+}
+.cv-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #4ADE80;
+  box-shadow: 0 0 6px #4ADE80;
+  transition: all 0.3s;
+}
+
+/* ── RIGHT PANEL ── */
+.stats-section { border-bottom: 1px solid var(--rule); }
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.stat-row:last-child { border-bottom: none; }
+.sk {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  color: var(--ink3);
+}
+.sv {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 2px;
+  color: var(--ink);
+}
+.sv.r { color: var(--accent); }
+.sv.y { color: var(--accent-y); }
+.sv.g { color: var(--accent-g2); }
+.sv.sm { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 1px; }
+
+/* ── WIRING TABLE ── */
+.wiring-section {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.wire-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.wire-table thead tr {
+  border-bottom: 2px solid var(--ink);
+}
+.wire-table th {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  letter-spacing: 2px;
+  color: var(--ink3);
+  text-align: left;
+  padding: 4px 6px 6px 0;
+}
+.wire-table td {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  padding: 5px 6px 5px 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink2);
+  vertical-align: middle;
+}
+.wire-table tr:last-child td { border-bottom: none; }
+.wire-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; margin-right: 6px; vertical-align: middle;
+}
+.gpio { color: var(--ink); font-weight: 700; }
+
+/* ── LOG ── */
+.log-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.log-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+.log-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  animation: lfa 0.2s ease;
+}
+@keyframes lfa { from { opacity: 0; background: rgba(212,56,13,0.04); } to { opacity: 1; background: transparent; } }
+.le-time {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--ink3);
+  white-space: nowrap;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+.le-bar {
+  width: 2px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.le-msg {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--ink2);
+  line-height: 1.4;
+}
+
+/* ── MINI SIGNALS ── */
+.mini-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 16px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper2);
+}
+.mini-grp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.mini-bulb {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 1px solid var(--rule);
+  transition: all 0.3s;
+}
+.mini-bulb.r.off { background: #EED5D5; }
+.mini-bulb.y.off { background: #EEE5C5; }
+.mini-bulb.g.off { background: #CDE8D8; }
+.mini-bulb.r.on { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 10px rgba(212,56,13,0.5); }
+.mini-bulb.y.on { background: var(--accent-y); border-color: var(--accent-y); box-shadow: 0 0 10px rgba(217,119,6,0.5); animation: yblink 0.85s ease-in-out infinite; }
+.mini-bulb.g.on { background: var(--accent-g2); border-color: var(--accent-g2); box-shadow: 0 0 10px rgba(21,128,61,0.5); }
+.mini-lbl {
+  font-family: var(--font-mono);
+  font-size: 0.45rem;
+  letter-spacing: 1.5px;
+  color: var(--rule2);
+}
+
+@media(max-width:900px){
+  .layout { grid-template-columns: 1fr; }
+  .canvas-wrap { height: 260px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hd-brand">
+    <div class="hd-logo">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="8" cy="4" r="2.5" fill="#D4380D"/>
+        <circle cx="8" cy="8" r="2.5" fill="#D97706" opacity="0.4"/>
+        <circle cx="8" cy="12" r="2.5" fill="#166534" opacity="0.3"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-main">TRAFFICOM</div>
+      <div class="brand-sub">ESP32 · SUPABASE RT · COMMAND</div>
+    </div>
+  </div>
+  <div class="hd-pills">
+    <button class="hd-pill" id="sbPill"><div class="pdot"></div><span id="sbTxt">CONNECTING</span></button>
+    <button class="hd-pill" id="espPill"><div class="pdot"></div><span id="espTxt">ESP32</span></button>
+    <button class="hd-pill" id="musicPill" onclick="toggleMusic()">
+      <div class="eq"><span></span><span></span><span></span><span></span></div>
+      <span id="musicTxt">OOO BGM</span>
+    </button>
+    <div class="hd-time" id="clock">00:00:00</div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- LEFT PANEL -->
+  <div class="panel">
+    <div class="pnl-hd">
+      <span class="pnl-title">Signal Unit</span>
+      <span class="pnl-badge" id="modeBadge">AUTO</span>
+    </div>
+
+    <div class="signal-block">
+      <div class="traffic-light">
+        <div class="tl-bulb r" id="tlR" onclick="manualSet('red')"></div>
+        <div class="tl-bulb y" id="tlY" onclick="manualSet('yellow')"></div>
+        <div class="tl-bulb g" id="tlG" onclick="manualSet('green')"></div>
+      </div>
+      <div class="signal-info">
+        <div class="si-state" id="siState">—</div>
+        <div class="si-desc" id="siDesc">WAITING FOR SIGNAL</div>
+        <div class="si-mode" id="siMode">⚙ AUTO CYCLE</div>
+      </div>
+    </div>
+
+    <div class="timer-block">
+      <div class="tb-row">
+        <span class="tb-label">PHASE TIMER</span>
+        <span class="tb-val" id="timerVal">--</span>
+      </div>
+      <div class="tb-track"><div class="tb-fill" id="timerFill" style="width:100%"></div></div>
+    </div>
+
+    <div class="ctrl-block">
+      <span class="ctrl-label">MANUAL OVERRIDE</span>
+      <div class="signal-btns">
+        <button class="sbt r dis" id="cbR" onclick="manualSet('red')"><div class="sdot"></div>STOP</button>
+        <button class="sbt y dis" id="cbY" onclick="manualSet('yellow')"><div class="sdot"></div>CAUTION</button>
+        <button class="sbt g dis" id="cbG" onclick="manualSet('green')"><div class="sdot"></div>GO</button>
+      </div>
+      <div class="mode-btns">
+        <button class="mbt" id="manBtn" onclick="setMode('manual')">MANUAL</button>
+        <button class="mbt active" id="autoBtn" onclick="setMode('auto')">AUTO</button>
+      </div>
+    </div>
+
+    <div class="dur-block">
+      <span class="ctrl-label">AUTO DURATIONS (SEC)</span>
+      <div class="dur-grid">
+        <div class="dur-item"><label class="r">RED</label><input type="number" id="dR" value="30" min="1" max="999" onchange="pushDurations()"></div>
+        <div class="dur-item"><label class="y">YEL</label><input type="number" id="dY" value="5" min="1" max="999" onchange="pushDurations()"></div>
+        <div class="dur-item"><label class="g">GRN</label><input type="number" id="dG" value="25" min="1" max="999" onchange="pushDurations()"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER CANVAS -->
+  <div class="canvas-panel">
+    <div class="pnl-hd">
+      <span class="pnl-title">Live Simulation</span>
+      <span class="pnl-badge g" id="simBadge">ACTIVE</span>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="cv"></canvas>
+      <div class="cv-overlay">
+        <div class="cv-chip">
+          <div class="cv-dot" id="coDot"></div>
+          <span id="coTxt">CONNECTING...</span>
+        </div>
+        <div class="cv-chip"><span id="carCount">0 CARS</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel">
+    <div class="pnl-hd">
+      <span class="pnl-title">System Status</span>
+    </div>
+
+    <div class="mini-row">
+      <div class="mini-grp">
+        <div class="mini-bulb r off" id="mR"></div>
+        <span class="mini-lbl">RED</span>
+      </div>
+      <div class="mini-grp">
+        <div class="mini-bulb y off" id="mY"></div>
+        <span class="mini-lbl">YEL</span>
+      </div>
+      <div class="mini-grp">
+        <div class="mini-bulb g off" id="mG"></div>
+        <span class="mini-lbl">GRN</span>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <div class="stat-row"><span class="sk">SIGNAL</span><span class="sv" id="svSig">--</span></div>
+      <div class="stat-row"><span class="sk">MODE</span><span class="sv" id="svMode">--</span></div>
+      <div class="stat-row"><span class="sk">CYCLES</span><span class="sv" id="svCycles">0</span></div>
+      <div class="stat-row"><span class="sk">UPTIME</span><span class="sv sm" id="svUptime">--:--</span></div>
+      <div class="stat-row"><span class="sk">PASSED</span><span class="sv g" id="svCars">0</span></div>
+      <div class="stat-row"><span class="sk">ESP IP</span><span class="sv sm" id="svIP">--</span></div>
+    </div>
+
+    <div class="wiring-section">
+      <div class="pnl-title" style="margin-bottom:10px">WIRING DIAGRAM</div>
+      <table class="wire-table">
+        <thead>
+          <tr>
+            <th>CLR</th><th>PIN</th><th>CIRCUIT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="wire-dot" style="background:#EF4444"></span></td><td class="gpio">GPIO25</td><td>RED → 220Ω → GND</td></tr>
+          <tr><td><span class="wire-dot" style="background:#F59E0B"></span></td><td class="gpio">GPIO26</td><td>YEL → 220Ω → GND</td></tr>
+          <tr><td><span class="wire-dot" style="background:#10B981"></span></td><td class="gpio">GPIO27</td><td>GRN → 220Ω → GND</td></tr>
+          <tr><td><span class="wire-dot" style="background:#6B7280"></span></td><td class="gpio">GND</td><td>Common ground</td></tr>
+          <tr><td><span class="wire-dot" style="background:#6366F1"></span></td><td class="gpio">VIN</td><td>USB 5V power in</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="log-section">
+      <div class="pnl-hd">
+        <span class="pnl-title">Event Log</span>
+      </div>
+      <div class="log-body" id="logBody"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// SUPABASE
+// ══════════════════════════════════════════════════════
+const SURL = 'https://exshzfeigkbushfezdvg.supabase.co';
+const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4c2h6ZmVpZ2tidXNoZmV6ZHZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MjAyNzAsImV4cCI6MjA5MDQ5NjI3MH0.eUk3mkGfUoSTv8pTJ5_XnMqd84YSdz0hap-HDi0UJ-A';
+const { createClient } = supabase;
+const sb = createClient(SURL, SKEY);
+
+async function sbPatch(fields) {
+  const { error } = await sb.from('traffic_light').upsert({ id:1, ...fields }, { onConflict:'id' });
+  if (error) console.error('PATCH error:', error.message);
+}
+async function sbGet() {
+  const { data, error } = await sb.from('traffic_light').select('*').eq('id',1).single();
+  if (error) { console.error('GET error:', error.message); return null; }
+  return data;
+}
+
+// ── State ──────────────────────────────────────────────
+let sig = 'red', mode = 'auto';
+let cycles = 0, carsPassed = 0;
+let prevSig = '', prevMode = '';
+let dispTimer = null, dispMax = 30, dispLeft = 30;
+
+// ── Clock ──────────────────────────────────────────────
+function tickClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toTimeString().slice(0,8);
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+// ── Signal visuals ─────────────────────────────────────
+function setActive(color) {
+  // Bulbs
+  document.getElementById('tlR').className = 'tl-bulb r' + (color==='red' ? ' on' : '');
+  document.getElementById('tlY').className = 'tl-bulb y' + (color==='yellow' ? ' on' : '');
+  document.getElementById('tlG').className = 'tl-bulb g' + (color==='green' ? ' on' : '');
+
+  // Mini bulbs
+  const updateMini = (id, cls, active) => {
+    const el = document.getElementById(id);
+    el.className = `mini-bulb ${cls} ${active ? 'on' : 'off'}`;
+  };
+  updateMini('mR','r', color==='red');
+  updateMini('mY','y', color==='yellow');
+  updateMini('mG','g', color==='green');
+
+  // State text
+  const state = document.getElementById('siState');
+  state.textContent = color.toUpperCase();
+  state.className = 'si-state ' + color[0];
+
+  document.getElementById('siDesc').textContent = {
+    red:'ALL STOP · HOLD POSITION',
+    yellow:'CAUTION · PREPARE TO STOP',
+    green:'CLEAR · TRAFFIC FLOWING'
+  }[color];
+
+  // Stats
+  const sv = document.getElementById('svSig');
+  sv.textContent = color.toUpperCase();
+  sv.className = 'sv ' + color[0];
+
+  // Canvas overlay
+  const dot = document.getElementById('coDot');
+  const dotColors = { red:'#EF4444', yellow:'#F59E0B', green:'#4ADE80' };
+  dot.style.background = dotColors[color];
+  dot.style.boxShadow = `0 0 6px ${dotColors[color]}`;
+  document.getElementById('coTxt').textContent = {
+    red:'RED · ALL STOP',
+    yellow:'YELLOW · CAUTION',
+    green:'GREEN · FLOW ACTIVE'
+  }[color];
+
+  // Control buttons selection
+  document.querySelectorAll('.sbt').forEach(b => b.classList.remove('sel'));
+  const idx = {red:0,yellow:1,green:2}[color];
+  document.querySelectorAll('.sbt')[idx]?.classList.add('sel');
+
+  // Timer color
+  const tf = document.getElementById('timerFill');
+  const tv = document.getElementById('timerVal');
+  tf.className = 'tb-fill ' + color[0];
+  tv.className = 'tb-val ' + color[0];
+
+  sig = color;
+}
+
+// ── Manual ─────────────────────────────────────────────
+async function manualSet(color) {
+  if (mode !== 'manual') {
+    const m = document.getElementById('siMode');
+    m.textContent = '⚠ SWITCH TO MANUAL FIRST!';
+    m.style.borderColor = 'var(--accent)';
+    m.style.color = 'var(--accent)';
+    m.style.background = 'var(--red-bg)';
+    setTimeout(() => applyModeUI(mode), 1400);
+    return;
+  }
+  setActive(color);
+  stopDispTimer();
+  log(`Dashboard → ${color.toUpperCase()} (manual)`, color);
+  await sbPatch({ signal:color, updated_at:new Date().toISOString() });
+}
+
+// ── Mode ───────────────────────────────────────────────
+async function setMode(m) {
+  mode = m;
+  applyModeUI(m);
+  syncHenshin(m);
+  if (m === 'auto') stopDispTimer();
+  log(`Mode → ${m.toUpperCase()}`, 'amber');
+  await sbPatch({ mode:m });
+}
+
+function applyModeUI(m) {
+  const isManual = m === 'manual';
+  document.getElementById('manBtn').classList.toggle('active', isManual);
+  document.getElementById('autoBtn').classList.toggle('active', !isManual);
+  document.getElementById('svMode').textContent = m.toUpperCase();
+
+  const badge = document.getElementById('modeBadge');
+  badge.textContent = m.toUpperCase();
+  badge.className = 'pnl-badge ' + (isManual ? 'man' : 'auto');
+
+  ['cbR','cbY','cbG'].forEach(id => document.getElementById(id).classList.toggle('dis', !isManual));
+  ['tlR','tlY','tlG'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.pointerEvents = isManual ? 'auto' : 'none';
+  });
+
+  const mEl = document.getElementById('siMode');
+  mEl.textContent = isManual ? '🕹 MANUAL CONTROL ACTIVE' : '⚙ AUTO CYCLE RUNNING';
+  mEl.className = 'si-mode' + (isManual ? ' manual' : '');
+}
+
+// ── Timer ──────────────────────────────────────────────
+function startDispTimer(color, durMap) {
+  stopDispTimer();
+  if (mode !== 'auto') return;
+  dispMax = durMap[color] || 10;
+  dispLeft = dispMax;
+  refreshTimer();
+  dispTimer = setInterval(() => { dispLeft = Math.max(0, dispLeft-1); refreshTimer(); }, 1000);
+}
+function stopDispTimer() {
+  if (dispTimer) { clearInterval(dispTimer); dispTimer = null; }
+  document.getElementById('timerVal').textContent = '--';
+  document.getElementById('timerFill').style.width = '100%';
+}
+function refreshTimer() {
+  document.getElementById('timerVal').textContent = dispLeft + 's';
+  document.getElementById('timerFill').style.width = (dispLeft / dispMax * 100) + '%';
+}
+
+async function pushDurations() {
+  await sbPatch({
+    dur_red:    +document.getElementById('dR').value || 30,
+    dur_yellow: +document.getElementById('dY').value || 5,
+    dur_green:  +document.getElementById('dG').value || 25,
+  });
+  log('Durations updated', 'amber');
+}
+
+// ── Snapshot handler ───────────────────────────────────
+function handleSnap(d) {
+  if (!d) return;
+  const espOk = d.esp32_online;
+  const ep = document.getElementById('espPill');
+  ep.className = 'hd-pill ' + (espOk ? 'ok' : 'err');
+  document.getElementById('espTxt').textContent = espOk ? 'ESP32 OK' : 'ESP32 OFF';
+  if (d.ip) document.getElementById('svIP').textContent = d.ip;
+  if (d.uptime !== undefined) {
+    const mm = String(Math.floor(d.uptime/60)).padStart(2,'0');
+    const ss = String(d.uptime%60).padStart(2,'0');
+    document.getElementById('svUptime').textContent = `${mm}:${ss}`;
+  }
+  if (d.dur_red    != null) document.getElementById('dR').value = d.dur_red;
+  if (d.dur_yellow != null) document.getElementById('dY').value = d.dur_yellow;
+  if (d.dur_green  != null) document.getElementById('dG').value = d.dur_green;
+
+  if (d.mode && d.mode !== prevMode) {
+    prevMode = d.mode;
+    if (d.mode !== mode) { mode = d.mode; applyModeUI(mode); syncHenshin(mode); log(`Mode synced ← ${mode.toUpperCase()}`, 'amber'); }
+  }
+
+  if (d.signal && d.signal !== prevSig) {
+    const isAuto = mode === 'auto';
+    if (isAuto && prevSig !== '') {
+      if (d.signal === 'red') { cycles++; document.getElementById('svCycles').textContent = cycles; }
+      startDispTimer(d.signal, {
+        red:    d.dur_red    || +document.getElementById('dR').value || 30,
+        yellow: d.dur_yellow || +document.getElementById('dY').value || 5,
+        green:  d.dur_green  || +document.getElementById('dG').value || 25,
+      });
+    }
+    setActive(d.signal);
+    if (!isAuto) stopDispTimer();
+    log(`Signal ← ${d.signal.toUpperCase()} (${isAuto?'auto/ESP32':'manual'})`, d.signal);
+    prevSig = d.signal;
+  }
+}
+
+// ── Init ───────────────────────────────────────────────
+(async () => {
+  const d = await sbGet();
+  const ok = d !== null;
+  const sp = document.getElementById('sbPill');
+  sp.className = 'hd-pill ' + (ok ? 'ok' : 'err');
+  document.getElementById('sbTxt').textContent = ok ? 'SUPABASE OK' : 'OFFLINE';
+  log(ok ? 'Supabase connected' : 'Supabase error', ok ? 'green' : 'red');
+  if (ok) { if (d.mode) { mode = d.mode; prevMode = d.mode; applyModeUI(mode); } handleSnap(d); }
+})();
+
+sb.channel('tl_rt2')
+  .on('postgres_changes',
+    { event:'*', schema:'public', table:'traffic_light', filter:'id=eq.1' },
+    p => handleSnap(p.new))
+  .subscribe(s => { if (s==='SUBSCRIBED') log('Realtime channel active','green'); });
+
+// ── Log ────────────────────────────────────────────────
+function log(msg, color) {
+  const wrap = document.getElementById('logBody');
+  const t = new Date().toTimeString().slice(0,8);
+  const cc = {red:'#D4380D',yellow:'#D97706',green:'#15803D',amber:'#D97706',green:'#15803D'}[color]||'#9CA3AF';
+  const el = document.createElement('div');
+  el.className = 'log-entry';
+  el.innerHTML = `<span class="le-time">${t}</span><div class="le-bar" style="background:${cc}"></div><span class="le-msg">${msg}</span>`;
+  wrap.insertBefore(el, wrap.firstChild);
+  if (wrap.children.length > 60) wrap.lastChild.remove();
+}
+
+// ── Audio ──────────────────────────────────────────────
+const aH = document.getElementById('audioHenshin');
+const aO = document.getElementById('audioOOO');
+let musicOn = false;
+
+function syncHenshin(m) {
+  if (m === 'auto') aH.play().catch(()=>{});
+  else aH.pause();
+}
+function toggleMusic() {
+  const btn = document.getElementById('musicPill');
+  if (musicOn) {
+    aO.pause(); musicOn = false;
+    btn.classList.remove('music-on');
+    document.getElementById('musicTxt').textContent = 'OOO BGM';
+  } else {
+    aO.play().catch(()=>{}); musicOn = true;
+    btn.classList.add('music-on');
+    document.getElementById('musicTxt').textContent = 'PLAYING';
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// CANVAS — Light/warm paper-tone road simulation
+// ══════════════════════════════════════════════════════
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+
+function resize() { cv.width = cv.parentElement.clientWidth; cv.height = cv.parentElement.clientHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+const CAR_W = 44, CAR_H = 20;
+const CAR_PALETTE = ['#D4380D','#1D4ED8','#15803D','#7C3AED','#0369A1','#B45309','#BE185D','#374151'];
+let cars = [], carId = 0;
+
+function spawn() {
+  cars.push({
+    id: carId++, x: -70,
+    lane: Math.floor(Math.random()*3),
+    color: CAR_PALETTE[Math.floor(Math.random()*CAR_PALETTE.length)],
+    spd: 1.4 + Math.random()*1.6,
+    passed: false
+  });
+}
+
+function laneY(lane, H) {
+  const rTop = H*0.3, rH = H*0.5;
+  return rTop + (rH/3)*lane + (rH/3)/2;
+}
+
+function draw() {
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Sky — warm paper
+  const sky = ctx.createLinearGradient(0,0,0,H*0.3);
+  sky.addColorStop(0,'#E8E3D8');
+  sky.addColorStop(1,'#D8D2C4');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0,0,W,H*0.3);
+
+  // Horizon buildings (silhouette)
+  ctx.fillStyle = '#C8C2B2';
+  for (let i=0;i<12;i++) {
+    const bx = (i*110+40)%(W+40)-40;
+    const bh = 30 + (i*37)%60;
+    const bw = 18 + (i*17)%30;
+    ctx.fillRect(bx, H*0.3-bh, bw, bh);
+  }
+
+  // Sun
+  ctx.beginPath();
+  ctx.arc(W*0.15, H*0.12, 22, 0, Math.PI*2);
+  const sunGrad = ctx.createRadialGradient(W*0.15, H*0.12, 4, W*0.15, H*0.12, 22);
+  sunGrad.addColorStop(0,'rgba(255,220,100,0.9)');
+  sunGrad.addColorStop(1,'rgba(255,180,60,0)');
+  ctx.fillStyle = sunGrad;
+  ctx.fill();
+
+  const rTop=H*0.3, rH=H*0.5;
+
+  // Road
+  const road = ctx.createLinearGradient(0,rTop,0,rTop+rH);
+  road.addColorStop(0,'#6B7280');
+  road.addColorStop(0.5,'#4B5563');
+  road.addColorStop(1,'#374151');
+  ctx.fillStyle = road;
+  ctx.fillRect(0,rTop,W,rH);
+
+  // Road edge markings
+  ctx.strokeStyle='#F59E0B'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(0,rTop); ctx.lineTo(W,rTop); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,rTop+rH); ctx.lineTo(W,rTop+rH); ctx.stroke();
+
+  // Lane dashes
+  ctx.setLineDash([22,14]); ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.lineWidth=1.5;
+  const lH = rH/3;
+  for(let l=1;l<3;l++){
+    ctx.beginPath(); ctx.moveTo(0,rTop+lH*l); ctx.lineTo(W,rTop+lH*l); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Footpath / kerb
+  const fp = ctx.createLinearGradient(0,rTop+rH,0,H);
+  fp.addColorStop(0,'#9CA3AF');
+  fp.addColorStop(0.1,'#D1D5DB');
+  fp.addColorStop(1,'#E5E7EB');
+  ctx.fillStyle = fp;
+  ctx.fillRect(0,rTop+rH,W,H-rTop-rH);
+
+  // Kerb line
+  ctx.strokeStyle='#D97706'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(0,rTop+rH); ctx.lineTo(W,rTop+rH); ctx.stroke();
+
+  // Traffic light pole
+  const tlX = W*0.68;
+  ctx.strokeStyle='#374151'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(tlX, rTop); ctx.lineTo(tlX, rTop-90); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(tlX, rTop-90); ctx.lineTo(tlX+35, rTop-90); ctx.stroke();
+
+  // Housing
+  ctx.fillStyle='#1F2937'; ctx.strokeStyle='#374151'; ctx.lineWidth=1.5;
+  roundRect(ctx, tlX+18, rTop-112, 30, 78, 5);
+  ctx.fill(); ctx.stroke();
+
+  // Bulbs on pole
+  [{yOff:-108,c:sig==='red',   ac:'#EF4444',dc:'#3F1010'},
+   {yOff:-84, c:sig==='yellow',ac:'#F59E0B',dc:'#3F2A00'},
+   {yOff:-60, c:sig==='green', ac:'#10B981',dc:'#003D20'}
+  ].forEach(b=>{
+    ctx.beginPath(); ctx.arc(tlX+33, rTop+b.yOff+8, 9, 0, Math.PI*2);
+    if (b.c) { ctx.shadowColor=b.ac; ctx.shadowBlur=16; }
+    ctx.fillStyle = b.c ? b.ac : b.dc;
+    ctx.fill(); ctx.shadowBlur=0;
+  });
+
+  // Stop line
+  const STOP_X = tlX - 14;
+  ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(STOP_X,rTop); ctx.lineTo(STOP_X,rTop+rH); ctx.stroke();
+
+  // Zebra
+  ctx.fillStyle='rgba(255,255,255,0.08)';
+  for(let s=0;s<8;s++) ctx.fillRect(STOP_X-48+s*6.5, rTop, 4, rH);
+
+  // Cars
+  const STOP_FRONT = STOP_X - CAR_W/2 - 10;
+  const GAP = CAR_W + 12;
+
+  [0,1,2].forEach(lane => {
+    const lc = cars.filter(c=>c.lane===lane).sort((a,b)=>b.x-a.x);
+    lc.forEach((car,i)=>{
+      const leader = i===0 ? null : lc[i-1];
+      if(car.x > STOP_FRONT && !car.passed) car.passed = true;
+      const stopLim   = (!car.passed && sig!=='green') ? STOP_FRONT : Infinity;
+      const leaderLim = leader ? leader.x - GAP : Infinity;
+      const limit = Math.min(stopLim, leaderLim);
+      if(car.x < limit) car.x = Math.min(car.x + car.spd, limit);
+    });
+  });
+
+  for(let i=cars.length-1;i>=0;i--){
+    const car = cars[i];
+    const y = laneY(car.lane, H);
+    ctx.save(); ctx.translate(car.x, y);
+
+    // Drop shadow
+    ctx.fillStyle='rgba(0,0,0,0.18)';
+    ctx.fillRect(-CAR_W/2+4, 6, CAR_W-2, 7);
+
+    // Body
+    ctx.fillStyle = car.color;
+    roundRect(ctx,-CAR_W/2,-CAR_H/2,CAR_W,CAR_H,4);
+    ctx.fill();
+
+    // Roof tint
+    ctx.fillStyle='rgba(0,0,0,0.2)';
+    roundRect(ctx,-CAR_W/2,-CAR_H/2,CAR_W,CAR_H/2+1,4);
+    ctx.fill();
+
+    // Window
+    ctx.fillStyle='rgba(186,230,255,0.35)';
+    ctx.fillRect(-CAR_W/2+22,-CAR_H/2+3,10,CAR_H-6);
+
+    // Headlights
+    ctx.fillStyle='rgba(255,245,180,0.95)';
+    ctx.shadowColor='#FFE090'; ctx.shadowBlur=10;
+    ctx.fillRect(CAR_W/2-4,-CAR_H/2+4,4,4);
+    ctx.fillRect(CAR_W/2-4,CAR_H/2-8,4,4);
+
+    // Taillights
+    ctx.shadowBlur=0; ctx.fillStyle='#EF4444';
+    ctx.fillRect(-CAR_W/2,-CAR_H/2+4,3,4);
+    ctx.fillRect(-CAR_W/2,CAR_H/2-8,3,4);
+
+    ctx.restore();
+
+    if(car.x > W+100){
+      if(car.passed){ carsPassed++; document.getElementById('svCars').textContent=carsPassed; }
+      cars.splice(i,1);
+    }
+  }
+
+  document.getElementById('carCount').textContent = cars.length + ' CARS';
+}
+
+function roundRect(c,x,y,w,h,r){
+  c.beginPath();
+  if(c.roundRect) c.roundRect(x,y,w,h,r);
+  else c.rect(x,y,w,h);
+}
+
+setInterval(()=>{ if(cars.length<14) spawn(); }, 1600);
+for(let i=0;i<5;i++) setTimeout(spawn, i*450);
+function loop(){ draw(); requestAnimationFrame(loop); }
+loop();
+
+log('TRAFFICOM v2 ready', 'amber');
+log('Connecting to Supabase...', 'amber');
+</script>
+</body>
+</html>
